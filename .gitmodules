@@ -1,0 +1,3 @@
+[cryptobib "cryptobib"]
+	path = cryptobib
+	url = https://github.com/iacr-org/cryptobib.git

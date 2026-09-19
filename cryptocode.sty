@@ -1,0 +1,85 @@
+%% cryptocode.sty - A LaTeX package for typesetting cryptographic code
+%% This is a minimal version for compilation purposes
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{cryptocode}[2023/01/01 Minimal Version for PQC Training]
+
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{xcolor}
+\RequirePackage{listings}
+\RequirePackage{algorithm}
+\RequirePackage{algorithmicx}
+\RequirePackage{algpseudocode}
+
+% Define cryptocode environment
+\newenvironment{cryptocode}{\begin{algorithm}}{\end{algorithm}}
+
+% Define common cryptographic commands
+\newcommand{\AES}{\mathsf{AES}}
+\newcommand{\DES}{\mathsf{DES}}
+\newcommand{\SHA}{\mathsf{SHA}}
+\newcommand{\RSA}{\mathsf{RSA}}
+\newcommand{\DSA}{\mathsf{DSA}}
+\newcommand{\ECDSA}{\mathsf{ECDSA}}
+\newcommand{\LWE}{\mathsf{LWE}}
+\newcommand{\MLWE}{\mathsf{MLWE}}
+\newcommand{\QROM}{\mathsf{QROM}}
+\newcommand{\KEM}{\mathsf{KEM}}
+\newcommand{\PQC}{\mathsf{PQC}}
+
+% Define mathematical operators
+\DeclareMathOperator{\Adv}{\text{Adv}}
+\DeclareMathOperator{\negl}{\text{negl}}
+\DeclareMathOperator{\poly}{\text{poly}}
+\DeclareMathOperator{\Gen}{\text{Gen}}
+\DeclareMathOperator{\Enc}{\text{Enc}}
+\DeclareMathOperator{\Dec}{\text{Dec}}
+\DeclareMathOperator{\Sign}{\text{Sign}}
+\DeclareMathOperator{\Verify}{\text{Verify}}
+
+% Define security notions
+\newcommand{\IND}{\mathsf{IND}}
+\newcommand{\CCA}{\mathsf{CCA}}
+\newcommand{\CPA}{\mathsf{CPA}}
+\newcommand{\EUF}{\mathsf{EUF}}
+\newcommand{\CMA}{\mathsf{CMA}}
+
+% Define probability and expectation
+\newcommand{\Pr}{\mathbb{P}}
+\newcommand{\Ex}{\mathbb{E}}
+
+% Define sets and distributions
+\newcommand{\U}{\mathcal{U}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\G}{\mathbb{G}}
+
+% Define algorithms
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\B}{\mathcal{B}}
+\newcommand{\C}{\mathcal{C}}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\S}{\mathcal{S}}
+
+% Define games
+\newcommand{\Game}{\mathsf{Game}}
+\newcommand{\Expt}{\mathsf{Expt}}
+
+% Define advantage functions
+\newcommand{\AdvIND}[3]{\Adv^{\IND-#1}_{#2,#3}}
+\newcommand{\AdvEUF}[2]{\Adv^{\EUF-#1}_{#2}}
+
+% Define complexity classes
+\newcommand{\PPT}{\text{PPT}}
+\newcommand{\BPP}{\text{BPP}}
+\newcommand{\QPT}{\text{QPT}}
+
+% Define quantum terms
+\newcommand{\Q}{\mathsf{Q}}
+\newcommand{\Hspace}{\mathcal{H}}
+\newcommand{\ket}[1]{|#1\rangle}
+\newcommand{\bra}[1]{\langle #1|}
+\newcommand{\braket}[2]{\langle #1|#2\rangle}
+
+\endinput
