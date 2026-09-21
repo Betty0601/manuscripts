@@ -1,0 +1,43 @@
+\section{Lean 的其他功能（Features）}\label{sec:features}
+
+\subsection{宏系统}
+宏在展开期把一段语法翻译为另一段语法，不经过证明内核，因此零可信成本、零开销：
+
+\begin{lstlisting}
+macro "intro_true_macro" : tactic => `(tactic| exact .intro)
+example : True := by intro_true_macro
+
+macro "print_nat_zero" : command => `(command| #check (0 : Nat))
+print_nat_zero
+\end{lstlisting}
+
+\subsection{编写自定义 tactic}
+\texttt{elab ... : tactic} 进入 \texttt{TacticM} 单子，可以记录消息、
+顺序编排任意 tactic。下例先打印一条 info 再调用 \texttt{simp}：
+
+\begin{lstlisting}
+open Lean Elab Tactic
+
+elab "report_and_simp" : tactic => do
+  Lean.logInfo "report_and_simp: running simp"
+  evalTactic (<- `(tactic| simp))
+
+example (n : Nat) : n + 0 = n := by report_and_simp
+\end{lstlisting}
+
+共享层 \texttt{LeanPlayground.Common.Tactics} 中的 tactic
+可被任意子项目 \texttt{import}（本文件即其用例）。
+
+\subsection{IO 与函数式编程}
+纯函数部分（\texttt{foldl}、列表变换）可被 \texttt{\#eval} 直接测试；
+副作用收敛到 \texttt{IO} 单子中：
+
+\begin{lstlisting}
+def squareSum (xs : List Nat) : Nat :=
+  xs.foldl (fun acc x => acc + x * x) 0
+
+#eval squareSum [1, 2, 3, 4]   -- 30
+
+def main : IO Unit := do
+  IO.println "Hello from Lean Playground"
+\end{lstlisting}

@@ -1,0 +1,24 @@
+% math-macros.tex — shared mathematical notation for all subprojects.
+% All macros use the \lg prefix ("lean playground") to avoid clashes with
+% cryptocode.sty and other packages loaded by the main paper.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesFile{math-macros.tex}[2026/09/21 shared math macros]
+\RequirePackage{amsmath,amssymb}
+
+\providecommand{\lgN}{\mathbb{N}}
+\providecommand{\lgZ}{\mathbb{Z}}
+\providecommand{\lgQ}{\mathbb{Q}}
+\providecommand{\lgR}{\mathbb{R}}
+\providecommand{\lgC}{\mathbb{C}}
+\providecommand{\lgF}[1]{\mathbb{F}_{#1}}
+\providecommand{\lgbigo}[1]{O\!\left(#1\right)}
+\providecommand{\lgnegl}{\operatorname{negl}}
+% Quantum / QIS
+\providecommand{\lgket}[1]{\left\lvert #1 \right\rangle}
+\providecommand{\lgbra}[1]{\left\langle #1 \right\rvert}
+\providecommand{\lgip}[2]{\left\langle #1 \middle| #2 \right\rangle}
+\providecommand{\lgtensor}{\otimes}
+% Game-based proofs
+\providecommand{\lgGame}{\operatorname{Game}}
+\providecommand{\lgAdv}{\operatorname{Adv}}
+\endinput
