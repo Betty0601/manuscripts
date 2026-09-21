@@ -20,7 +20,10 @@ hadamard = 1/Sqrt[2] {{1, 1}, {1, -1}};
 
 (* Bell state |Phi+> = (|00> + |11>)/Sqrt[2] *)
 bellPhiPlus = 1/Sqrt[2] {1, 0, 0, 1};
-bellDensity = KroneckerProduct[{bellPhiPlus}, {Conjugate[bellPhiPlus]}][[1]];
+(* Density matrix is the outer product |psi><psi|, i.e. a 4x4 matrix:
+   column vector (4x1) times row vector (1x4). A Kronecker product of two
+   row vectors would instead yield a flat 1x16 vector. *)
+bellDensity = Transpose[{bellPhiPlus}] . {Conjugate[bellPhiPlus]};
 
 Print["Eigenvalues of X: ", Eigenvalues[pauliX]];
 Print["H . X . H = ", FullSimplify[hadamard . pauliX . hadamard]];

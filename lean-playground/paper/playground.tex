@@ -11,6 +11,9 @@
 \input{../common/latex/wolfram-style}
 \input{../common/latex/math-macros}
 
+% Avoid minor overfull lines in long \texttt identifiers / citation labels.
+\emergencystretch=1.5em
+
 \newcommand{\lgroot}{..}
 
 \title{Lean Playground:\\Notes, Proofs and Verified Experiments}
@@ -21,4 +24,10 @@
 \maketitle
 \tableofcontents
 \input{body}
+
+% Paths are relative to this file's directory (lean-playground/paper/), so
+% repository-root files are two levels up (../../). BibTeX string macros in
+% abbrev.bib must be listed before the files that use them.
+\bibliographystyle{alpha}
+\bibliography{../../cryptobib/abbrev,../../references,../../cryptobib/crypto}
 \end{document}

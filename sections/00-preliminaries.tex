@@ -1,19 +1,33 @@
 \section{Preliminaries}
 \label{sec:preliminaries}
 
-This section contains the preliminary definitions and notations used throughout the manuscript.
+This section fixes the preliminary definitions and notation used throughout
+the manuscript.
 
 \subsection{Notation}
 \label{subsec:notation}
 
-We use standard mathematical notation throughout this document.
+We write $\lgN$, $\lgZ$, $\lgQ$, $\lgR$, and $\lgC$ for the natural, integer,
+rational, real, and complex numbers, and $\lgF{q}$ for the finite field with
+$q$ elements. Quantum state vectors use Dirac notation $\lgket{\cdot}$ and
+$\lgbra{\cdot}$, following the conventions of
+Nielsen~\&~Chuang~\cite{NielsenChuang2010}.
 
-\subsection{Mathematical Background}
+\subsection{Mathematical background}
 \label{subsec:math-background}
 
-Basic mathematical concepts required for understanding the proofs.
+We assume elementary linear algebra over $\lgR$ and $\lgC$, probability
+distributions on finite sets, and the basic notions of modular arithmetic in
+$\lgZ/n\lgZ$.
 
-\subsection{Cryptographic Primitives}
+\subsection{Cryptographic primitives}
 \label{subsec:crypto-primitives}
 
-Definition of cryptographic primitives and security notions.
+A public-key encryption scheme, a key-encapsulation mechanism (KEM), and a
+digital signature scheme each consist of a triple of probabilistic
+polynomial-time algorithms; their standard indistinguishability and
+unforgeability security notions are recalled as needed, following the
+treatment of Katz~\&~Lindell~\cite{KatzLindell2020}. The lattice-based
+constructions targeted in this training project, ML-KEM and ML-DSA, operate
+over module lattices; the survey by Peikert~\cite{Peikert2016} gives an
+overview of the area.

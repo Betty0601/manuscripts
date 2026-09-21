@@ -12,7 +12,7 @@ theorem mul_zero_demo (n : Nat) : n * 0 = 0 := by
   induction n with
   | zero => rfl
   | succ n ih =>
-      -- 注意：rw 重写后自动尝试 rfl，这里改完即闭合，无需再写 rfl
+      -- rw tries rfl after rewriting; the goal is closed without an extra rfl
       rw [Nat.succ_mul, ih]
 
 /-- 列表连接长度：|xs ++ ys| = |xs| + |ys|。 -/

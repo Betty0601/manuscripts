@@ -1,25 +1,38 @@
-\documentclass[iacr]{iacrtrans}
+% iacrtrans: official IACR Transactions class (vendored, CC0).
+% Preprint mode (default) with the ToSC layout. The journal key is set via
+% \setkeys rather than as a class option: cryptocode loads packages before
+% consuming the option list, which would otherwise leave "journal=tosc" on
+% LaTeX's unused-global-option list. Switch to [submission] for an anonymous
+% line-numbered submission, or set journal=tches for TCHES.
+\documentclass{iacrtrans}
+\makeatletter
+\setkeys{IACR}{journal=tosc}
+\makeatother
 \usepackage{cryptocode}
-\usepackage{amsmath,amssymb,amsfonts}
-\usepackage{xcolor}
-\usepackage{graphicx}
+\usepackage{amsfonts}
 \usepackage{tikz}
 \usetikzlibrary{positioning,arrows,calc}
 
-% Lean Playground: shared code styles and math macros (pdfLaTeX-safe)
+% Lean Playground: shared code styles and math macros (pdfLaTeX-safe).
+% The class already provides xcolor, amsmath/amssymb/amsthm, graphicx and
+% hyperref, so only the extra pieces are listed here.
 \input{lean-playground/common/latex/lean-style}
 \input{lean-playground/common/latex/wolfram-style}
 \input{lean-playground/common/latex/math-macros}
 
-\title{PQC Level ① Pre-Training with QIS Exercises}
-\author{}
-\date{}
+% Avoid minor overfull lines in long \texttt identifiers / citation labels.
+\emergencystretch=1.5em
+
+\title{PQC Pre-Training with QIS and Lean Playground Exercises}
+\author{Betty0601}
+\institute{Training project repository}
+\keywords{Post-Quantum Cryptography \and QIS \and ML-KEM \and Lean \and Mathlib}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-Training repo: Practice proofs from Nielsen & Chuang Quantum Computation and Quantum Information (QIS), build skill for ML-KEM/ML-DSA QROM security reduction.
+Training repo: Practice proofs from Nielsen \& Chuang Quantum Computation and Quantum Information (QIS), build skill for ML-KEM/ML-DSA QROM security reduction.
 \end{abstract}
 
 \input{sections/00-preliminaries}
@@ -27,6 +40,8 @@ Training repo: Practice proofs from Nielsen & Chuang Quantum Computation and Qua
 \input{lean-playground/paper/appendix}
 
 \bibliographystyle{alpha}
-\bibliography{references,cryptobib/abbrev,cryptobib/crypto}
+% abbrev.bib is loaded first: BibTeX string macros are only visible to
+% database files listed after the one defining them.
+\bibliography{cryptobib/abbrev,references,cryptobib/crypto}
 
 \end{document}

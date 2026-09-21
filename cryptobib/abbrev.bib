@@ -1,6 +1,17 @@
-@article{TestAbbrev2023,
-  author = {Test Author},
-  title = {Test Abbreviation},
-  year = {2023},
-  journal = {Test Journal}
-}
+% abbrev.bib -- journal / proceedings abbreviations for crypto.bib.
+%
+% Minimal curated subset in the style of the upstream CryptoBib project
+% (https://github.com/cryptobib/export). The full upstream crypto.bib is
+% ~40 MB; this project vendors only the entries it actually cites and keeps
+% the venue names as BibTeX string macros below so they read like upstream.
+% NOTE: in BibTeX comment lines, avoid the at-sign character entirely:
+% the parser treats it as the start of a command even after a percent sign.
+
+@string{ LNCS       = "Lecture Notes in Computer Science" }
+@string{ CRYPTO     = "Advances in Cryptology---CRYPTO" }
+@string{ EUROCRYPT  = "Advances in Cryptology---EUROCRYPT" }
+@string{ ASIACRYPT  = "Advances in Cryptology---ASIACRYPT" }
+@string{ IEEESP     = "Proceedings of the {IEEE} Symposium on Security and Privacy" }
+@string{ EUROSP     = "Proceedings of the {IEEE} European Symposium on Security and Privacy (EuroS\&P)" }
+@string{ CADE       = "Automated Deduction---CADE 28" }
+@string{ CPP        = "Proceedings of the 9th {ACM} {SIGPLAN} International Conference on Certified Programs and Proofs ({CPP})" }

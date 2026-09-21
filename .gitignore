@@ -18,6 +18,12 @@
 *.ist
 *.glo
 
+# Generated paper outputs (built locally / on Overleaf; never commit them,
+# and a stray output.pdf in an Overleaf project blocks recompilation)
+/main.pdf
+/lean-playground/paper/playground.pdf
+/output.pdf
+
 # OS
 .DS_Store
 Thumbs.db

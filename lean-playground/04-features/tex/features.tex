@@ -1,7 +1,9 @@
-\section{Lean 的其他功能（Features）}\label{sec:features}
+\section{Other Lean Features}\label{sec:features}
 
-\subsection{宏系统}
-宏在展开期把一段语法翻译为另一段语法，不经过证明内核，因此零可信成本、零开销：
+\subsection{The macro system}
+A macro translates one piece of syntax into another at expansion time; it
+never touches the proof kernel, so it carries zero trusted cost and zero
+overhead:
 
 \begin{lstlisting}
 macro "intro_true_macro" : tactic => `(tactic| exact .intro)
@@ -11,9 +13,10 @@ macro "print_nat_zero" : command => `(command| #check (0 : Nat))
 print_nat_zero
 \end{lstlisting}
 
-\subsection{编写自定义 tactic}
-\texttt{elab ... : tactic} 进入 \texttt{TacticM} 单子，可以记录消息、
-顺序编排任意 tactic。下例先打印一条 info 再调用 \texttt{simp}：
+\subsection{Writing custom tactics}
+\texttt{elab ... : tactic} gives access to the \texttt{TacticM} monad, where
+one can log messages and sequence arbitrary tactics. The example below logs
+an info message and then calls \texttt{simp}:
 
 \begin{lstlisting}
 open Lean Elab Tactic
@@ -25,19 +28,24 @@ elab "report_and_simp" : tactic => do
 example (n : Nat) : n + 0 = n := by report_and_simp
 \end{lstlisting}
 
-共享层 \texttt{LeanPlayground.Common.Tactics} 中的 tactic
-可被任意子项目 \texttt{import}（本文件即其用例）。
+Tactics from the shared layer
+\texttt{LeanPlayground.Common.Tactics} can be \texttt{import}ed by any
+subproject (this very file is a use case).
 
-\subsection{IO 与函数式编程}
-纯函数部分（\texttt{foldl}、列表变换）可被 \texttt{\#eval} 直接测试；
-副作用收敛到 \texttt{IO} 单子中：
+\subsection{IO and functional programming}
+The pure fragment (\texttt{foldl}, list combinators) can be exercised
+directly with \texttt{\#eval}; side effects are confined to the \texttt{IO}
+monad:
 
 \begin{lstlisting}
+def greet (name : String) : String :=
+  s!"Hello, {name}, from Lean Playground!"
+
 def squareSum (xs : List Nat) : Nat :=
   xs.foldl (fun acc x => acc + x * x) 0
 
 #eval squareSum [1, 2, 3, 4]   -- 30
 
 def main : IO Unit := do
-  IO.println "Hello from Lean Playground"
+  IO.println <| greet "world"
 \end{lstlisting}

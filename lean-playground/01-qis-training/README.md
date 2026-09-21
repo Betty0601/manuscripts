@@ -17,5 +17,5 @@ ML-KEM/ML-DSA QROM 安全归约所需的能力建设。
 ## 构建
 
 ```bash
-lake build QISFormalMath QISNumericCircuit
+lake build FormalMath NumericCircuit
 ```

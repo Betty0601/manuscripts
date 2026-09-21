@@ -1,8 +1,9 @@
-\section{基础笔记（Foundations）}\label{sec:foundations}
+\section{Foundations}\label{sec:foundations}
 
-\subsection{数与求值}
-Lean 中的数字是携带类型的项：$\lgN$（\texttt{Nat}）、$\lgZ$（\texttt{Int}）、
-$\lgQ$（\texttt{Rat}）等。字面量由 \texttt{OfNat} 类型类解释。
+\subsection{Numbers and evaluation}
+In Lean~4~\cite{deMouraUllrich2021}, numerals are typed terms: $\lgN$
+(\texttt{Nat}), $\lgZ$ (\texttt{Int}), $\lgQ$ (\texttt{Rat}), and so on.
+Literals are interpreted by the \texttt{OfNat} typeclass.
 
 \begin{lstlisting}
 #eval 2 + 3 * 4            -- 14
@@ -10,9 +11,9 @@ $\lgQ$（\texttt{Rat}）等。字面量由 \texttt{OfNat} 类型类解释。
 #check Nat.add_comm        -- forall n m : Nat, n + m = m + n
 \end{lstlisting}
 
-\subsection{定义：函数、归纳类型、结构}
-结构化递归由 Lean 的终止性检查器自动核验，例如阶乘
-$0! := 1,\ (n+1)! := (n+1)\,n!$：
+\subsection{Definitions: functions, inductive types, structures}
+Structural recursion is checked automatically by the termination checker.
+For example, factorial with $0! := 1$ and $(n+1)! := (n+1)\,n!$:
 
 \begin{lstlisting}
 def factorial : Nat -> Nat
@@ -22,11 +23,13 @@ def factorial : Nat -> Nat
 #eval factorial 5          -- 120
 \end{lstlisting}
 
-\texttt{inductive} 引入归纳类型，\texttt{structure} 引入字段聚合；
-二者都是 CIC 中的归纳构造。
+\texttt{inductive} introduces inductive types and \texttt{structure}
+introduces record types; both are represented as inductive constructions in
+the CIC.
 
-\subsection{类型类}
-类型类按类型分派接口。例如 $p$ 为素数时 $\lgF{p}$ 获得 \texttt{Field} 结构：
+\subsection{Typeclasses}
+Typeclasses dispatch interface implementations by type. For instance,
+$\lgF{p}$ carries a \texttt{Field} structure whenever $p$ is prime:
 
 \begin{lstlisting}
 instance : Fact (Nat.Prime 7) := Fact.mk (by decide)
@@ -38,7 +41,8 @@ instance : Add WrappedNat where
   add a b := WrappedNat.mk (a.n + b.n)
 \end{lstlisting}
 
-\subsection{探索性命令}
-\texttt{\#check}（查类型）、\texttt{\#eval}（求值）、
-\texttt{\#reduce}（弱头归约到构造子）、\texttt{\#print}（查看定义）、
-\texttt{\#synth}（查询类型类实例）是 Lean 工作流里最常用的五个命令。
+\subsection{Exploration commands}
+\texttt{\#check} (inspect a type), \texttt{\#eval} (compile and evaluate),
+\texttt{\#reduce} (reduce to weak-head normal form), \texttt{\#print}
+(inspect a definition), and \texttt{\#synth} (search a typeclass instance)
+are the five most frequently used commands in the Lean workflow.

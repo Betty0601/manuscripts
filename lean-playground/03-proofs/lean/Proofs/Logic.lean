@@ -21,8 +21,18 @@ example (P : Prop) : ¬¬P ↔ P := by
   · intro h
     by_contra hn
     exact h hn
-  · intro h
-    intro hn
+  · intro h hn
+    exact hn h
+
+/-- Same statement written with ASCII syntax (mirrors the paper listing). -/
+example (P : Prop) : Not (Not P) <-> P := by
+  constructor
+  case mp =>
+    intro h
+    by_contra hn
+    exact h hn
+  case mpr =>
+    intro h hn
     exact hn h
 
 example (n : Nat) : n = 0 ∨ n ≠ 0 := by

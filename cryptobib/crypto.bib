@@ -1,6 +1,51 @@
-@article{TestCrypto2023,
-  author = {Test Author},
-  title = {Test Cryptography},
-  year = {2023},
-  journal = {Test Journal}
+% crypto.bib -- cryptography references.
+%
+% Curated subset in the style of the upstream CryptoBib project
+% (https://github.com/cryptobib/export). Only the PQC / QROM entries cited
+% by this training manuscript are kept; drop in the full ~40 MB upstream
+% crypto.bib (plus abbrev0.bib .. abbrev3.bib) if additional entries are
+% needed. Venue macros are defined in abbrev.bib.
+
+% Quantum random oracle model (QROM), introduced here.
+@inproceedings{BDFLSZ2011QROM,
+  author    = {Dan Boneh and {\"O}zg{\"u}r Dagdelen and Marc Fischlin and
+               Anja Lehmann and Christian Schaffner and Mark Zhandry},
+  title     = {Random Oracles in a Quantum World},
+  booktitle = ASIACRYPT,
+  series    = LNCS,
+  volume    = {7073},
+  pages     = {41--69},
+  year      = {2011},
+  publisher = {Springer},
+  note      = {Cryptology ePrint Archive, Report 2010/428}
+}
+
+% ML-KEM standard (based on CRYSTALS-Kyber).
+@techreport{FIPS203,
+  author      = {{National Institute of Standards and Technology}},
+  title       = {{FIPS} 203: Module-Lattice-Based Key-Encapsulation Mechanism Standard},
+  institution = {U.S. Department of Commerce},
+  year        = {2024},
+  doi         = {10.6028/NIST.FIPS.203}
+}
+
+% ML-DSA standard (based on CRYSTALS-Dilithium).
+@techreport{FIPS204,
+  author      = {{National Institute of Standards and Technology}},
+  title       = {{FIPS} 204: Module-Lattice-Based Digital Signature Standard},
+  institution = {U.S. Department of Commerce},
+  year      = {2024},
+  doi       = {10.6028/NIST.FIPS.204}
+}
+
+% The CRYSTALS-Kyber KEM (academic precursor of ML-KEM).
+@inproceedings{BDKLLPSSS2018Kyber,
+  author    = {Joppe W. Bos and L{\'e}o Ducas and Eike Kiltz and Tancr\`ede Lepoint and
+               Vadim Lyubashevsky and John M. Schanck and Peter Schwabe and
+               Gregor Seiler and Damien Stehl{\'e}},
+  title     = {{CRYSTALS}--{Kyber}: A {CCA}-Secure Module-Lattice-Based {KEM}},
+  booktitle = EUROSP,
+  pages     = {353--367},
+  year      = {2018},
+  publisher = {{IEEE}}
 }
