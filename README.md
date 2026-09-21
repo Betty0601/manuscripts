@@ -26,6 +26,9 @@ LWE/Module-LWE → QROM → PQC standard proofs.
   `crypto.bib` (QROM/ML-KEM/ML-DSA entries). Only cited entries are kept;
   the full ~40 MB upstream `crypto.bib` can be dropped in if needed.
 - `references.bib` — textbooks and Lean/Mathlib references.
+- `papers/regev-lwe-zh.tex` — standalone Chinese translation of Regev's LWE
+  paper (arXiv:2401.03703v1). It is **not** included by `main.tex` and needs
+  **XeLaTeX** (ctex/xeCJK), not pdfLaTeX.
 
 ## Compile
 
@@ -35,3 +38,11 @@ latexmk -pdf main.tex
 
 On Overleaf, set the compiler to pdfLaTeX and use Menu → GitHub → Pull to
 sync changes from this repository.
+
+For the Chinese companion document, select it as the main document, switch
+the Overleaf compiler to **XeLaTeX**, and compile `papers/regev-lwe-zh.tex`
+locally with:
+
+```bash
+xelatex papers/regev-lwe-zh.tex   # run twice
+```

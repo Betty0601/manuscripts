@@ -22,6 +22,7 @@
 # and a stray output.pdf in an Overleaf project blocks recompilation)
 /main.pdf
 /lean-playground/paper/playground.pdf
+/papers/regev-lwe-zh.pdf
 /output.pdf
 
 # OS

@@ -1,0 +1,601 @@
+% !TeX program = xelatex
+% =====================================================================
+% 编译说明（Overleaf）：
+%   1. 打开本文件后，在 Menu（菜单）→ Main document（主文档）中选择本文件；
+%   2. Menu → Compiler（编译器）选择 XeLaTeX；
+%   3. Recompile。
+% 本文件是独立中文文档，不被 main.tex 引用，主稿 main.tex 仍用 pdfLaTeX 编译。
+% =====================================================================
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[UTF8,scheme=plain]{ctex}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{microtype}
+
+% 中英文混排时给断行器更多余量，消除超长行（overfull/underfull hbox）
+\emergencystretch=3em
+
+% 定理类环境共用一个按节编号的计数器，以保持与原文一致的编号
+% （定理 1.1、Claim 2.2、引理 3.2、推论 3.10、定义 3.18……）。
+\newtheorem{theorem}{定理}[section]
+\newtheorem{lemma}[theorem]{引理}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{corollary}[theorem]{推论}
+\newtheorem{definition}[theorem]{定义}
+
+\DeclareMathOperator{\poly}{poly}
+\DeclareMathOperator*{\E}{\mathbb{E}}
+\newcommand{\bmodop}{\operatorname{bmod}}
+% 可断行的人名连字符：连字符后带一个可断行空格，避免
+% Peikert--Vaikuntanathan--Waters 这类长外文连排把整行撑出边距。
+% （注意不能叫 \--：该名与内核断词命令 \- 冲突。）
+\newcommand{\namedash}{\,\textendash\ }
+\newcommand{\T}{\mathbb{T}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Psibar}{\overline{\Psi}}
+
+\title{关于格、带错误学习问题、随机线性码与密码学\\（中文学习译文）}
+\author{Oded Regev 著}
+\date{原文发表于 \textit{Journal of the ACM}, 56(6), Article 34, 2009\\
+译自 arXiv:2401.03703v1（2024 年 1 月修订版，已修复 Claim 3.13 原证明中的漏洞）}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent\textbf{译者说明：}本稿为学习用途的中文翻译，覆盖原文全部摘要、引言、预备定义、主定理完整证明、LWE 变体等价归约、公钥密码系统构造与安全性证明、致谢与参考文献。数学符号与术语遵循国内密码学界通用译法，所有定理、引理、Claim 编号与原文一一对应。该 arXiv 修订版与 2009 年 JACM 正式发表版的主体内容、章节结构与定理体系一致，唯一实质区别是修复了 Claim 3.13 原证明中的漏洞。
+\end{abstract}
+
+\section*{摘要}
+\addcontentsline{toc}{section}{摘要}
+
+本文的核心结果是给出从\textbf{最坏情况格问题}（如最短向量判定问题 GapSVP、最短独立向量问题 SIVP）到一类学习问题的归约。该学习问题可看作``带错误奇偶学习问题''向高模数的自然推广，也等价于随机线性码的译码问题。我们认为，这一结果有力地证明了该类学习问题的计算困难性。
+
+需要特别说明：\textbf{本文给出的归约是量子归约}——也就是说，若存在求解该学习问题的高效经典算法，则意味着存在求解 GapSVP 与 SIVP 的高效量子算法。一个核心公开问题是：该归约能否被改造为纯经典（非量子）归约。
+
+本文同时构造了一套\textbf{经典公钥密码系统}，其安全性建立在该学习问题的困难性之上。结合主定理，该密码系统的安全性同样等价于 GapSVP 与 SIVP 在最坏情况下的量子困难性。相比此前的格基密码系统，这套新系统效率显著提升：公钥规模为 $\widetilde{O}(n^{2})$，加密带来的消息膨胀因子仅为 $\widetilde{O}(n)$；而早期格基密码系统的对应数值分别为 $\widetilde{O}(n^{4})$ 与 $\widetilde{O}(n^{2})$。进一步，如果所有参与方预先共享一段长度为 $\widetilde{O}(n^{2})$ 的可信随机比特串，公钥规模还可以压缩至 $\widetilde{O}(n)$。
+
+\section{引言}
+
+\subsection{主定理}
+
+对整数 $n\ge 1$、实数 $\varepsilon\ge 0$，我们首先定义\textbf{带错误奇偶学习问题}：目标是在给定一组带误差等式的前提下，恢复未知向量 $s\in\Z_{2}^{n}$：
+\[
+  \langle s,a_{1}\rangle \approx_{\varepsilon} b_{1} \pmod{2},
+  \qquad
+  \langle s,a_{2}\rangle \approx_{\varepsilon} b_{2} \pmod{2},
+\]
+其中 $a_{i}$ 独立均匀取自 $\Z_{2}^{n}$；$\langle s,a_{i}\rangle=\sum_{j}s_{j}(a_{i})_{j}$ 是向量 $s$ 与 $a_{i}$ 的模 $2$ 内积；每条等式以 $1-\varepsilon$ 的概率完全正确。更严格地说，输入为多组 $(a_{i},b_{i})$：$a_{i}$ 均匀随机取自 $\Z_{2}^{n}$，$b_{i}$ 以 $1-\varepsilon$ 的概率等于 $\langle s,a_{i}\rangle$，其余概率取错误值。问题的目标是：求出秘密向量 $s$。
+
+当 $\varepsilon=0$ 时，该问题可以用高斯消元在 $O(n)$ 条等式、$O(n)$ 时间内求解。但只要 $\varepsilon>0$，问题难度就会急剧上升。举例来说，尝试用高斯消元恢复 $s$ 的第一个比特：我们选出 $O(n)$ 条等式，使等式向量之和为 $(1,0,\dots,0)$；再把对应的 $b_{i}$ 相加，得到对 $s_{1}$ 的猜测。但标准计算可以证明，该猜测的正确率仅为 $\frac{1}{2}+2^{-\Theta(n)}$。想要高置信度得到第一个比特，就必须重复该过程 $2^{\Theta(n)}$ 次，整体需要 $2^{O(n)}$ 条等式与时间。事实上可以证明：仅给定 $O(n)$ 条等式，使满足等式数量最多的候选向量 $s'$ 以高概率等于真实的 $s$——这给出一种简单的最大似然算法，仅需 $O(n)$ 条等式，但运行时间仍为 $2^{O(n)}$。
+
+Blum、Kalai 与 Wasserman 给出了该问题的首个亚指数算法，仅需 $2^{O(n/\log n)}$ 的等式数量与运行时间，至今仍是该问题的已知最优结果。该思想后续还催生了最短向量问题的 $2^{O(n)}$ 复杂度算法。
+
+一个重要公开问题是：解释为什么该学习问题难以找到高效算法。本文主定理针对该问题向高模数的自然扩展，给出了困难性解释。
+
+设素数 $p=p(n)\le \poly(n)$，考虑一组带误差等式：
+\[
+  \langle s,a_{1}\rangle \approx_{\chi} b_{1} \pmod{p},
+  \qquad
+  \langle s,a_{2}\rangle \approx_{\chi} b_{2} \pmod{p}.
+\]
+此时未知向量 $s\in\Z_{p}^{n}$，$a_{i}$ 均匀取自 $\Z_{p}^{n}$，$b_{i}\in\Z_{p}$；误差由概率分布 $\chi:\Z_{p}\to\R^{+}$ 刻画：$b_{i}=\langle s,a_{i}\rangle+e_{i}$，其中 $e_{i}$ 独立按 $\chi$ 采样。我们把从上述样本恢复 $s$ 的问题记作 $\mathrm{LWE}_{p,\chi}$（带错误学习问题，Learning With Errors）。
+
+带错误奇偶学习问题就是 $p=2$、$\chi(0)=1-\varepsilon$、$\chi(1)=\varepsilon$ 的特例。当满足 $\chi(0)>1/p+1/\poly(n)$ 时，最大似然算法可以用 $O(n)$ 条等式、$2^{O(n\log n)}$ 时间求解 $\mathrm{LWE}_{p,\chi}$；在相似条件下，Blum 等人风格的算法仅需 $2^{O(n)}$ 条等式与时间，这也是目前已知该问题的最优算法。
+
+\begin{theorem}[非正式表述]
+设 $n,p$ 为整数，$\alpha\in(0,1)$，且满足 $\alpha p>2\sqrt{n}$。若存在高效算法求解 $\mathrm{LWE}_{p,\Psibar_{\alpha}}$，则存在高效量子算法，能在最坏情况下将近似最短向量判定问题（GapSVP）、最短独立向量问题（SIVP）求解到近似因子 $\widetilde{O}(n/\alpha)$。
+\end{theorem}
+
+其中 $\Psibar_{\alpha}$ 是 $\Z_{p}$ 上的离散分布，原型为中心在 $0$、标准差为 $\alpha p$ 的离散高斯分布。取值为 $0$ 的概率约为 $1/(\alpha p)$。一组可行参数取 $p=O(n^{2})$、$\alpha=1/(\sqrt{n}\log^{2}n)$，这也是本文密码应用采用的参数。
+
+GapSVP 与 SIVP 是格领域两大核心计算问题。GapSVP 的输入是一个格，目标是近似最短非零格向量的长度；目前的多项式时间算法仅能给出较弱的亚指数近似因子。学界普遍猜想：不存在多项式时间经典算法，能以任意多项式因子近似求解二者。甚至可以猜想：不存在多项式时间量子算法，能以任意多项式因子近似 GapSVP/SIVP。在此猜想前提下，LWE 问题是计算困难的。当然，本主定理也提供了证伪该猜想的路径：一旦找到 LWE 的高效求解算法，就直接得到格问题的量子近似算法，本身也具备重大理论意义。
+
+LWE 问题也等价于\textbf{随机线性码译码问题}。设 $m=\poly(n)$，给定随机矩阵 $Q\in\Z_{p}^{m\times n}$，以及 $t=Qs+e\in\Z_{p}^{m}$；误差向量 $e$ 的每个坐标独立取自 $\Psibar_{\alpha}$，目标是恢复 $s$。$e$ 的汉明重量约为 $m(1-1/(\alpha p))$；对其他任意候选 $s'$，$t$ 与 $Qs'$ 的汉明距离约为 $m(1-1/p)$。因此，若能在小于 $(1-1/p)/(1-1/(\alpha p))$ 的因子下求解随机码的最近码字问题，则等价于在量子模型下求解最坏情况格问题。这部分结果部分回答了随机线性码译码困难性的公开问题。
+
+同时，一些看似比 LWE 更容易的问题，实际上与 LWE 等价。第 4 节用基础归约证明：能够区分 LWE 样本与完全均匀样本（判定版本 LWE），等价于可以求解搜索版本 LWE。只要对非可忽略比例的秘密 $s$ 能完成区分，就已经足够。密码应用部分我们就采用该判定版本。
+
+\subsection{密码系统}
+
+第 5 节给出一套公钥密码系统，并基于 LWE 判定困难假设证明其语义安全（IND-CPA）。整套密码系统完全是经典算法。核心思想是：公钥就是一组 LWE 带误差等式；加密时选取若干等式求和，再根据待加密消息修改等式右侧。安全性来源于：带误差等式样本与完全均匀样本在计算上不可区分。
+
+结合主定理，这套密码系统的安全性等价于：SIVP、GapSVP 在最坏情况下以 $\widetilde{O}(n^{1.5})$ 因子的量子困难性。对比旧的 Ajtai--Dwork 等密码系统，旧系统公钥规模 $\widetilde{O}(n^{4})$、消息膨胀 $\widetilde{O}(n^{2})$；本系统公钥 $\widetilde{O}(n^{2})$、消息膨胀 $\widetilde{O}(n)$。如果所有参与方预先共享一段可信随机串，公钥规模还可以降至 $\widetilde{O}(n)$。
+
+\subsection{为什么需要量子？}
+
+整篇论文绝大多数内容是经典推导；\textbf{仅主定理归约的其中一步依赖量子算法}。如果该步骤可以经典化，整套归约就变成经典归约。
+
+我们用直观例子解释难点：给定一个神谕，对点 $x$，若 $x$ 距离格 $L$ 的距离不超过 $d=\lambda_{1}(L)/n^{10}$，则输出格上距离 $x$ 最近的点；超出该距离则输出``无定义''。直观上该神谕能力很强，但经典环境下很难利用：想要喂给神谕输入点 $x$，只能取格点 $y$ 再叠加扰动 $z$ 得到 $x=y+z$，此时神谕返回 $y$，但我们本来就知道 $y$，没有获得任何新信息。
+
+但在量子模型下，该神谕非常有用：借助神谕可以完成\textbf{可逆寄存器擦除（反计算，uncompute）}，该操作仅量子环境可以实现。
+
+\subsection{技术手段}
+
+与早期格基公钥密码不同，本文主定理证明使用\textbf{迭代构造}：不是一步直接得到极短格向量，而是多轮迭代，每一轮得到更短的格向量。该迭代思路此前仅用于格单向函数构造。本文另一个创新点是：归约关键步骤使用量子计算。这是首个安全性建立在量子最坏困难假设之上的经典密码系统。
+
+证明大量使用高斯测度的傅里叶变换技术，引入了平滑参数、离散高斯分布等工具。
+
+\subsection{公开问题}
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{去量子化主归约}：能否将 LWE 困难性建立在 GapSVP/SIVP 的经典最坏情况困难假设之上？作者尝试多年仍未实现；核心障碍就是前面描述的：没有经典手段利用近距离 CVP 神谕。
+  \item 小模数（$p=2$）的带错误奇偶学习问题的困难性；本文主定理仅适用于 $p>2\sqrt{n}$；想要得到小模数版本需要全新思路，这也暗示小模数版本或许没有那么困难。
+  \item 将 LWE 和其他平均困难问题建立关联，例如 Feige 提出的各类问题。
+\end{enumerate}
+
+\subsection{后续相关工作}
+
+自 2005 年原始版本问世之后，出现了大量跟进工作：
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{密码系统改进方向}：Kawachi\namedash Tanaka\namedash Xagawa 小幅压缩密文膨胀；Peikert\namedash Vaikuntanathan\namedash Waters 实现密文膨胀为常数 $O(1)$，同时优化运行时间；Akavia 等人证明该密码系统在几乎全部密钥泄露场景下依旧安全。
+  \item \textbf{更多密码协议构造}：Peikert\namedash Waters 构造 CCA 安全密码系统、不经意传输；Gentry\namedash Peikert\namedash Vaikuntanathan 构造基于 LWE 的基于身份加密（IBE）；Cash\namedash Peikert\namedash Sahai 构造消息可以依赖私钥的公钥加密方案。
+  \item \textbf{学习半空间的困难性}：利用 LWE 归约得到学习半空间问题的困难结果。
+  \item \textbf{归约本身的改进}：Peikert 将主定理扩展到任意 $\ell_{q}$ 范数格问题；后续 Peikert 给出去掉归约中量子步骤的版本，但代价是模数 $p$ 需要指数规模，或者依赖非标准的 GapSVP 变体；因此``完全去量子化''依旧是重要公开问题。
+\end{enumerate}
+
+\subsection{证明概览}
+
+下面非正式地概述主定理（定理 3.1）的证明思路，完整证明在第 3 节。
+
+证明大量用到\textbf{格上离散高斯分布} $D_{L,r}$：支撑集合是格 $L$，点 $x\in L$ 的概率正比于 $\exp(-\pi\lVert x\rVert^{2}/r^{2})$。还有\textbf{平滑参数} $\eta_{\varepsilon}(L)$：粗略理解为，当宽度参数 $r$ 大于 $\eta_{\varepsilon}(L)$ 时，离散高斯分布的离散格结构效应被``抹平''，行为接近连续高斯。
+
+设定参数满足 $\alpha p>2\sqrt{n}$，示例取 $p=n^{2}$、$\alpha=1/n$。假设我们拥有 $\mathrm{LWE}_{p,\Psibar_{\alpha}}$ 求解神谕。证明核心思路是：只需要求解\textbf{离散高斯采样问题（DGS）}：输入格 $L$、参数
+\[
+  r\ge \frac{\sqrt{2n}\,\eta_{\varepsilon}(L)}{\alpha},
+\]
+输出服从 $D_{L,r}$ 的采样样本。一旦可以求解 DGS，就可以进一步得到 GapSVP、SIVP 的解。
+
+\paragraph*{迭代步骤算法概览}
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{自举（Bootstrap）}：初始生成大量极宽离散高斯样本 $D_{L,r_{3n}}$；$r_{3n}$ 取极大，该采样可以用简单的经典算法生成。
+  \item \textbf{迭代循环}：$i$ 从 $3n$ 向下到 $1$，利用 $D_{L,r_{i}}$ 样本，调用迭代子过程生成更窄分布 $D_{L,r_{i-1}}$，其中
+  \[
+    r_{i-1}=r_{i}\cdot\frac{\sqrt{n}}{\alpha p}.
+  \]
+  条件 $\alpha p>2\sqrt{n}$ 保证每一轮分布宽度减半。
+  \item 迭代结束，得到目标分布 $D_{L,r_{0}}=D_{L,r}$ 的样本，完成 DGS。
+\end{enumerate}
+
+迭代子过程分为两大块：
+
+\begin{enumerate}[label=(\arabic*)]
+  \item \textbf{经典部分（调用 LWE 神谕）}：给定 $D_{L,r}$ 样本，构造一个求解对偶格的有界距离 CVP 神谕 $\mathrm{CVP}_{L^{*},\alpha p/r}$：对点距离对偶格 $L^{*}$ 不超过 $\alpha p/r$ 时，输出距离最近的对偶格点。
+  \item \textbf{量子部分（整篇论文唯一量子步骤）}：使用该 CVP 神谕，执行量子算法，输出更窄的离散高斯样本 $D_{L,\,r\sqrt{n}/(\alpha p)}$。
+\end{enumerate}
+
+\paragraph*{子过程第一步（经典部分）}
+
+给定大量 $D_{L,r}$ 样本，我们可以通过统计采样近似计算分布的傅里叶变换：
+\[
+  f_{1/r}(x)\approx \frac{1}{N}\sum_{j=1}^{N}\exp\!\left(2\pi i\,\langle x,y_{j}\rangle\right),
+  \qquad y_{j}\leftarrow D_{L,r}.
+\]
+当 $1/r\ll\lambda_{1}(L^{*})$（对偶格最短向量长度）时，
+\[
+  f_{1/r}(x)\approx \exp\!\left(-\pi\bigl(r\cdot\operatorname{dist}(L^{*},x)\bigr)^{2}\right).
+\]
+该函数在对偶格点处取峰值，远离格点快速衰减。借助该傅里叶近似可以实现 CVP 求解，但原生版本只能处理距离 $O(\sqrt{\log n}/r)$ 内的点，达不到我们需要的 $\alpha p/r$。
+
+利用 LWE 神谕，可以获得额外因子 $\alpha p$ 的能力。把样本全部除以 $p$，得到缩放后格 $L/p$ 上的样本。该格可以拆分为 $p^{n}$ 个平移子格；当 $r/p$ 大于平滑参数时，各个平移副本的采样概率几乎均匀。对每一个平移副本，它的傅里叶变换会携带相位因子。我们可以构造形如
+\[
+  \langle a,\tau(x)\rangle \approx \bigl\lfloor p\langle x,y\rangle\bigr\rceil \pmod{p}
+\]
+的带误差等式，其中 $a$ 均匀随机，恰好匹配 LWE 问题的输入形式；调用 LWE 神谕恢复 $\tau(x)$，进一步就可以求解 $\mathrm{CVP}_{L^{*},\alpha p/r}$。同时可以证明：只要输入点距离对偶格不超过 $\beta p/r$（$\beta\le\alpha$），生成的误差分布就是 $\Psibar_{\beta}$；而 LWE 神谕可以处理全部 $\beta\le\alpha$ 的情形。
+
+\paragraph*{子过程第二步（量子部分，唯一量子步骤）}
+
+拿到 CVP 神谕之后，构造量子叠加态。利用 CVP 神谕完成\textbf{可逆寄存器擦除（反计算，uncompute）}；之后执行量子傅里叶变换，对量子态做测量，就得到离散高斯分布 $D_{L,r'}$ 的样本。
+
+直观解释：我们构造包含 $L^{*}$ 均匀叠加的量子态，叠加高斯权重；借助 CVP 神谕，当向量落在距离格不超过 $d$ 的范围时，可以可逆地还原出格点，从而消去一部分寄存器；再执行量子傅里叶变换，测量得到格上的离散高斯样本。
+
+\section{预备定义}
+
+\subsection{通用记号}
+
+对实数 $x$ 与 $y>0$，定义
+\[
+  x\bmodop y = x-\lfloor x/y\rfloor\,y.
+\]
+$\lfloor x\rceil$ 代表四舍五入取整，若 $x$ 恰好在两个整数正中，则取更小的那个。$\Z_{p}=\{0,1,\dots,p-1\}$ 为模 $p$ 循环群；$\T=\R/\Z$ 即 $[0,1)$ 模 $1$ 实数环。
+
+\textbf{可忽略函数}：$f(n)$ 被称作可忽略函数，当对任意常数 $c>0$，有
+\[
+  \lim_{n\to\infty} n^{c}f(n)=0.
+\]
+非可忽略函数：存在某个 $c>0$，使得其值大于等于 $n^{-c}$。指数小：上界为 $2^{-\Omega(n)}$；指数接近 $1$：概率等于 $1-2^{-\Omega(n)}$。
+
+\textbf{区分器}：算法输入两组分布的样本，若算法在两组分布下的接受概率存在非可忽略差距，则称该算法是这两个分布的区分器。本文几乎全部归约都具备指数小的错误概率。
+
+\textbf{统计距离}：对概率密度 $\phi_{1},\phi_{2}$，定义
+\[
+  \Delta(\phi_{1},\phi_{2}):=\int_{\R^{n}}\bigl|\phi_{1}(x)-\phi_{2}(x)\bigr|\,dx.
+\]
+统计距离满足三角不等式；对任意（随机）函数 $f$，有 $\Delta(f(X),f(Y))\le \Delta(X,Y)$。因此任意算法在分布 $(X,Y)$ 上的接受概率之差最多是 $\frac{1}{2}\Delta(X,Y)$。
+
+\subsection{高斯与各类分布}
+
+一维连续高斯密度：
+\[
+  \rho_{s}(x)=\exp\!\left(-\pi\left|\frac{x}{s}\right|^{2}\right).
+\]
+$\nu_{s}=\rho_{s}/s^{n}$ 为归一化的 $n$ 维高斯概率密度。
+
+\textbf{离散高斯分布 $D_{A,s}$}：定义在可数集合 $A$ 上，
+\[
+  \forall x\in A,\qquad D_{A,s}(x)=\frac{\rho_{s}(x)}{\rho_{s}(A)}.
+\]
+
+\textbf{周期化高斯分布 $\Psi_{\beta}$}：在环 $\T=\R/\Z$ 上，由标准差 $\beta/\sqrt{2\pi}$ 的连续高斯模 $1$ 折叠得到：
+\[
+  \forall r\in[0,1),\qquad
+  \Psi_{\beta}(r)=\sum_{k=-\infty}^{+\infty}\frac{1}{\beta}
+  \exp\!\left(-\pi\left(\frac{r-k}{\beta}\right)^{2}\right).
+\]
+
+\setcounter{theorem}{1} % 原文中该结果编号为 Claim 2.2（Claim 2.1 未在本稿展开）
+\begin{claim}
+对任意 $0<\alpha<\beta\le 2\alpha$，有
+\[
+  \Delta(\Psi_{\alpha},\Psi_{\beta})\le 9\left(\frac{\beta}{\alpha}-1\right).
+\]
+\end{claim}
+
+\textbf{LWE 问题形式化} $\mathrm{LWE}_{p,\chi}$：给定大量样本
+\[
+  \bigl(a,\;\langle a,s\rangle+e\pmod{p}\bigr),
+\]
+其中 $a$ 均匀取自 $\Z_{p}^{n}$，$e\sim\chi$，目标是恢复秘密向量 $s\in\Z_{p}^{n}$。判定版本：区分真实 LWE 样本与完全均匀样本。
+
+\subsection{格相关定义}
+
+\textbf{格} $L$：$\R^{n}$ 内一组基的全部整数线性组合。记 $\mathcal{P}(L)$ 为基本平行多面体；$\det(L)$ 为行列式；\textbf{对偶格}
+\[
+  L^{*}=\{\,y\in\R^{n}:\forall x\in L,\ \langle x,y\rangle\in\Z\,\}.
+\]
+$\lambda_{1}(L)$ 为最短非零格向量长度；$\lambda_{n}(L)$ 为 $n$ 个线性无关格向量所成集合的最小最长向量长度。
+
+\textbf{Banaszczyk 传递定理（Lemma 2.3）}：对任意 $n$ 维格 $L$，
+\[
+  1\le \lambda_{1}(L)\cdot\lambda_{n}(L^{*})\le n.
+\]
+
+\paragraph*{平滑参数 $\eta_{\varepsilon}(L)$ 的定义}
+
+\begin{quote}
+$\eta_{\varepsilon}(L)$ 是最小的 $s>0$，使得
+\[
+  \rho_{1/s}(L^{*}\setminus\{0\})\le \varepsilon.
+\]
+直观含义：当采样宽度参数大于平滑参数时，离散高斯分布的离散格结构效应被``抹平''，行为接近连续高斯。
+\end{quote}
+
+配套引理给出平滑参数的上下界，以及高斯分布加噪声之后统计距离的界。
+
+\subsection{格计算问题}
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{$\mathrm{GapSVP}_{\gamma}$（判定版最短向量）}：输入格 $L$、实数 $d$；YES 实例满足 $\lambda_{1}(L)\le d$；NO 实例满足 $\lambda_{1}(L)>\gamma(n)\cdot d$。
+  \item \textbf{$\mathrm{SIVP}_{\gamma}$（最短独立向量）}：输出 $n$ 个线性无关格向量，每个长度不超过 $\gamma(n)\cdot\lambda_{n}(L)$。
+  \item \textbf{DGS（离散高斯采样问题）}：输入格 $L$、$r>\varphi(L)$，输出服从 $D_{L,r}$ 的样本。
+  \item \textbf{有界距离译码（CVP）}：输入点 $x$ 距离格 $L$ 不超过 $d<\lambda_{1}(L)/2$，输出距离 $x$ 最近的格点。当 $d<\lambda_{1}(L)/2$ 时，最近格点唯一。
+\end{enumerate}
+
+\subsection{泊松求和公式}
+
+对格 $L$ 和函数 $f$，有
+\[
+  f(L)=\det(L^{*})\,\widehat{f}(L^{*}),
+\]
+其中 $\widehat{f}$ 代表傅里叶变换。高斯函数是自身的傅里叶变换（相差一个常数因子）：
+\[
+  \widehat{\rho_{s}}=s^{n}\rho_{1/s}.
+\]
+
+\section{主定理}
+
+\begin{theorem}[主定理]
+设 $\varepsilon(n)$ 为可忽略函数；$p=p(n)$ 为整数；实数 $\alpha=\alpha(n)\in(0,1)$，满足 $\alpha p>2\sqrt{n}$。假设我们拥有神谕 $W$，可以用多项式个样本求解 $\mathrm{LWE}_{p,\Psibar_{\alpha}}$。则存在高效量子算法，求解
+\[
+  \mathrm{DGS}_{\sqrt{2n}\,\eta_{\varepsilon}(L)/\alpha}.
+\]
+\end{theorem}
+
+证明分为三部分：
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{自举引理（Lemma 3.2）}：当 $r$ 取极大值 $r>2^{2n}\lambda_{n}(L)$ 时，可以经典高效地生成接近 $D_{L,r}$ 的样本，统计距离指数小。利用 LLL 约化基实现。
+  \item \textbf{迭代子过程（Lemma 3.3）}：给定 $D_{L,r}$ 样本，在条件 $r>\sqrt{2}\,p\,\eta_{\varepsilon}(L)$ 前提下，调用 LWE 神谕，输出 $D_{L,\,r\sqrt{n}/(\alpha p)}$ 样本。分为经典 CVP 求解、量子采样两大块。
+  \item \textbf{迭代}：从极大的 $r_{3n}$ 开始，反复调用迭代子过程，不断缩小分布宽度，直到得到目标 $r$ 对应的 $D_{L,r}$ 样本。
+\end{enumerate}
+
+\subsection{自举}
+
+\begin{lemma}[Bootstrap 自举]
+给定格 $L$ 与 $r>2^{2n}\lambda_{n}(L)$，存在高效算法，其输出分布与 $D_{L,r}$ 的统计距离为 $2^{-\Omega(n)}$。
+\end{lemma}
+
+证明思路：用 LLL 得到约化基；在连续高斯上采样，再投影回格的平行多面体，利用 Banaszczyk 高斯界，证明输出分布非常接近离散高斯。
+
+\subsection{迭代步骤}
+
+\begin{lemma}[迭代子过程]
+设 $\varepsilon(n)$ 为可忽略函数，$\alpha=\alpha(n)\in(0,1)$ 为实数，$p=p(n)\ge 2$ 为整数。假设我们拥有求解 $\mathrm{LWE}_{p,\Psibar_{\alpha}}$ 的神谕 $W$，给定多项式个样本。则存在常数 $c>0$ 与高效量子算法：给定任意 $n$ 维格 $L$、满足 $r>\sqrt{2}\,p\,\eta_{\varepsilon}(L)$ 的参数 $r$，以及 $n^{c}$ 个 $D_{L,r}$ 样本，输出 $D_{L,\,r\sqrt{n}/(\alpha p)}$ 的样本。
+\end{lemma}
+
+证明分为两部分：
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{Lemma 3.4（经典部分）}：用 LWE 神谕加离散高斯样本，构造 $\mathrm{CVP}_{L^{*},\,\alpha p/(\sqrt{2}\,r)}$ 神谕。
+  \item \textbf{Lemma 3.14（量子部分）}：给定 CVP 神谕，输出更窄的离散高斯样本。这是整篇论文唯一的量子组件。
+\end{enumerate}
+
+\subsubsection*{3.2.1\quad 从样本到 CVP}
+
+\begin{lemma}[迭代步骤第一部分]
+设 $\varepsilon(n)$ 为可忽略函数，$p=p(n)\ge 2$ 为整数，$\alpha=\alpha(n)\in(0,1)$ 为实数。假设我们拥有求解 $\mathrm{LWE}_{p,\Psibar_{\alpha}}$ 的神谕 $W$。则存在常数 $c>0$ 与高效算法：给定任意 $n$ 维格 $L$、满足 $r>\sqrt{2}\,p\,\eta_{\varepsilon}(L)$ 的参数 $r$，以及 $n^{c}$ 个 $D_{L,r}$ 样本，可以求解 $\mathrm{CVP}_{L^{*},\,\alpha p/(\sqrt{2}\,r)}$。
+\end{lemma}
+
+首先定义\textbf{模 $p$ 系数版本 CVP}：输入点 $x$ 距离格不超过 $d$，输出最近格点的系数向量模 $p$。
+
+\begin{lemma}[求模 $p$ 系数足以求解完整 CVP]
+存在高效算法：给定格 $L$、$d<\lambda_{1}(L)/2$、整数 $p\ge 2$，若拥有模 $p$ 版本 CVP 神谕，则可以求解完整 CVP。
+\end{lemma}
+
+证明思路：迭代地把点不断除以 $p$，逐步恢复低位到高位系数，最后结合 Babai 近平面算法恢复完整格点。
+
+\begin{lemma}[LWE 解校验]
+设 $p=p(n)\ge 1$ 为整数。存在高效算法：给定候选 $s'$ 与来自分布 $A_{s,\Psibar_{\alpha}}$ 的样本，可以指数高概率判断 $s=s'$ 是否成立。
+\end{lemma}
+
+证明思路：对样本做内积偏移，得到误差分布；用余弦期望的统计检验区分正确/错误秘密。
+
+\begin{lemma}[适配任意 $\beta\le\alpha$ 的噪声]
+设 $p=p(n)\ge 2$ 为整数，$\alpha=\alpha(n)\in(0,1)$。假设我们拥有求解 $\mathrm{LWE}_{p,\Psibar_{\alpha}}$ 的神谕。则存在高效算法 $W'$：对任意 $\beta\le\alpha$ 的 $\Psibar_{\beta}$ 噪声样本，都可以指数高概率输出秘密 $s$。
+\end{lemma}
+
+证明思路：人为叠加额外噪声，把任意 $\beta\le\alpha$ 的样本抬升到 $\Psibar_{\alpha}$，调用原始神谕，再做校验。
+
+接下来是关于高斯测度的三个核心 Claim（证明全部使用泊松求和公式与平滑参数性质）：
+
+\begin{claim}[平移不变性]
+对任意格 $L$、向量 $c\in\R^{n}$、$\varepsilon>0$，且 $r\ge\eta_{\varepsilon}(L)$，有
+\[
+  \rho_{r}(L+c)=r^{n}\det(L^{*})\,(1\pm\varepsilon).
+\]
+\end{claim}
+
+\begin{claim}[加噪声后接近连续高斯]
+设 $L$ 为格，向量 $u\in\R^{n}$，$r,s>0$，令 $t=\sqrt{r^{2}+s^{2}}$。若 $rs/t\ge\eta_{\varepsilon}(L)$（其中 $\varepsilon<1/2$），考虑从 $D_{L+u,r}$ 采样再叠加连续高斯噪声 $\nu_{s}$ 得到的分布 $Y$，则 $Y$ 与连续高斯 $\nu_{t}$ 的统计距离不超过 $4\varepsilon$。
+\end{claim}
+
+\begin{corollary}
+设 $L$ 为格，向量 $z,u\in\R^{n}$，$r,\alpha>0$。若
+\[
+  \frac{1}{\sqrt{1/r^{2}+(\lVert z\rVert/\alpha)^{2}}}\ge \eta_{\varepsilon}(L)
+  \qquad(\varepsilon<1/2),
+\]
+则内积 $\langle z,v\rangle+e$ 的分布（其中 $v\sim D_{L+u,r}$，$e$ 为正态噪声）与对应正态分布的统计距离不超过 $4\varepsilon$。
+\end{corollary}
+
+\begin{lemma}[第一部分主过程]
+设 $\varepsilon(n)$ 为可忽略函数，$p=p(n)\ge 2$ 为整数，$\alpha=\alpha(n)\in(0,1)$。假设我们拥有神谕 $W$：对所有 $\beta\le\alpha$，都可以从 $A_{s,\Psibar_{\beta}}$ 样本恢复 $s$。则存在高效算法：给定格 $L$、满足 $r>\sqrt{2}\,p\,\eta_{\varepsilon}(L)$ 的参数 $r$、多项式个 $D_{L,r}$ 样本，可以求解
+\[
+  \mathrm{CVP}^{(p)}_{L^{*},\,\alpha p/(\sqrt{2}\,r)}.
+\]
+\end{lemma}
+
+证明核心：构造形如
+\[
+  \bigl(a,\;\langle x,v\rangle/p+e\pmod{1}\bigr)
+\]
+的样本，该样本服从带误差的 LWE 分布，调用 LWE 神谕恢复 $\tau(x)$，进而得到 CVP 解。
+
+\subsubsection*{3.2.2\quad 从 CVP 到样本}
+
+\begin{lemma}
+存在高效量子算法：给定 $n$ 维格 $L\subseteq\Z^{n}$、$r>2^{2n}\lambda_{n}(L)$，所输出量子态与归一化离散高斯态的 $\ell_{2}$ 距离为 $2^{-\Omega(n)}$。
+\end{lemma}
+
+\begin{claim}[修复版]
+设 $R\ge 1$ 为整数，$L$ 为 $n$ 维格，$\mathcal{P}(L)$ 为 $L$ 的基本平行多面体。则对应两个量子态（将范数截断为小于 $\sqrt{n}$ 的版本 / 全集版本）之间的 $\ell_{2}$ 距离为 $2^{-\Omega(n)}$。
+
+\textbf{注：}2009 年期刊原版的该证明存在漏洞；2023 年作者本人将其修复，同一 bug 也由陈怡蕾、胡紫涵、刘启鹏、罗涵、屠亚欣独立发现。本版本采用修复后的表述。
+\end{claim}
+
+\begin{lemma}[迭代步骤第二部分，量子核心]
+存在高效量子算法：给定任意 $n$ 维格 $L$、$d<\lambda_{1}(L^{*})/2$，以及求解 $\mathrm{CVP}_{L^{*},d}$ 的神谕，输出
+\[
+  D_{L,\,\sqrt{n}/(\sqrt{2}\,d)}
+\]
+的样本。
+\end{lemma}
+
+证明思路：
+
+\begin{enumerate}[label=\arabic*.]
+  \item 构造大尺度量子高斯叠加态；
+  \item 利用 CVP 神谕完成寄存器的\textbf{反计算（uncompute）}：当输入点距离格不超过 $d$ 时，神谕给出最近格点，可逆地擦除该部分寄存器；
+  \item 对剩余量子态执行量子傅里叶变换；
+  \item 测量，得到格上的离散高斯样本。
+\end{enumerate}
+
+\subsection{标准格问题}
+
+本小节把标准格问题 GapSVP、SIVP 归约到 DGS。
+
+\begin{lemma}
+设 $L$ 为 $n$ 维格，$r\ge\sqrt{2}\,\eta_{\varepsilon}(L)$，$\varepsilon\le 1/10$。则对任意维数不超过 $n-1$ 的子空间 $H$，从 $D_{L,r}$ 采样的点 $x$ 满足 $x\notin H$ 的概率至少为 $1/10$。
+\end{lemma}
+
+\begin{corollary}
+设 $L$ 为 $n$ 维格，$r\ge\sqrt{2}\,\eta_{\varepsilon}(L)$，$\varepsilon\le 1/10$。则独立抽取的 $n^{2}$ 个 $D_{L,r}$ 样本中，不包含 $n$ 个线性无关向量的概率是指数小的。
+\end{corollary}
+
+\begin{lemma}[SIVP 归约到 DGS]
+对任意 $\varepsilon=\varepsilon(n)\le 1/10$、任意满足 $\varphi(L)\ge\sqrt{2}\,\eta_{\varepsilon}(L)$ 的 $\varphi$，存在从 $\mathrm{GIVP}_{2\sqrt{n}\,\varphi}$ 到 $\mathrm{DGS}_{\varphi}$ 的多项式时间归约。
+\end{lemma}
+
+证明思路：枚举多组参数，调用 DGS 神谕，取最短的一组线性无关向量。
+
+\begin{definition}[GAPCVP 与 GAPCVP$'$]
+原文定义 3.18（GAPCVP）与定义 3.19（GAPCVP$'$）：两类带``承诺间距''的最近向量判定/搜索问题，作为 GapSVP 与 DGS 之间归约的中间问题。
+\end{definition}
+
+\setcounter{theorem}{19} % 紧接定义 3.18 与 3.19 之后，原文编号为引理 3.20
+\begin{lemma}[GapSVP 归约到 DGS]
+对任意 $\gamma=\gamma(n)\ge 1$，存在从
+\[
+  \mathrm{GAPCVP}'_{100\sqrt{n}\,\gamma(n)}
+  \quad\text{到}\quad
+  \mathrm{DGS}_{\sqrt{n}\,\gamma(n)/\lambda_{1}(L^{*})}
+\]
+的多项式时间归约。
+\end{lemma}
+
+\section{LWE 问题的变体}
+
+本节通过初等归约证明：LWE 的搜索版本、判定版本、平均情况、最坏情况、离散/连续版本全部多项式等价。
+
+\begin{lemma}[平均情况到最坏情况]
+设 $p\ge 1$ 为整数，$\chi$ 为 $\Z_{p}$ 上的分布。假设我们拥有区分器 $W$，可以对非可忽略比例的 $s$ 区分 $A_{s,\chi}$ 与均匀分布 $U$。则存在高效算法 $W'$：对所有 $s$，都可以指数高概率地在输入取自 $A_{s,\chi}$ 时接受、在输入取自均匀分布时拒绝。
+\end{lemma}
+
+\begin{lemma}[判定到搜索]
+设 $n\ge 1$ 为整数，$2\le p\le\poly(n)$ 为素数，$\chi$ 为 $\Z_{p}$ 上的分布。假设我们拥有过程 $W$：对所有 $s$ 可以指数高概率地接受 $A_{s,\chi}$、拒绝均匀分布。则存在高效算法 $W'$：给定 $A_{s,\chi}$ 样本，可以指数高概率地输出 $s$。
+\end{lemma}
+
+\begin{lemma}[离散到连续]
+设 $n,p\ge 1$ 为整数，$\phi$ 为 $\T$ 上的概率密度，$\bar{\phi}$ 为其 $\Z_{p}$ 离散化。假设我们拥有求解 $\mathrm{LWE}_{p,\bar{\phi}}$ 的算法 $W$，则存在高效算法 $W'$ 求解 $\mathrm{LWE}_{p,\phi}$。
+\end{lemma}
+
+\begin{lemma}
+设 $n\ge 1$ 为整数，$2\le p\le\poly(n)$ 为素数。设 $\phi$ 为 $\T$ 上的概率密度，$\bar{\phi}$ 为其离散化。假设存在区分器，可以对非可忽略比例的 $s$ 区分 $A_{s,\bar{\phi}}$ 与均匀分布。则存在高效算法求解 $\mathrm{LWE}_{p,\phi}$。
+\end{lemma}
+
+\section{公钥密码系统}
+
+本节构造基于 LWE 的公钥加密方案，并证明其 IND-CPA 语义安全。
+
+\subsection{参数设置}
+
+安全参数为 $n$；素数模数 $p$ 满足
+\[
+  n^{2}\le p\le 2n^{2};
+\]
+取
+\[
+  m=(1+\varepsilon)(n+1)\log p;
+\]
+误差分布为 $\Psibar_{\alpha(n)}$，其中
+\[
+  \alpha(n)=o\!\left(\frac{1}{\sqrt{n}\log n}\right),
+\]
+例如可取 $\alpha(n)=1/(\sqrt{n}\log^{2}n)$。
+
+\subsection{方案构造}
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{私钥}：均匀随机选取 $s\in\Z_{p}^{n}$。
+  \item \textbf{公钥}：独立均匀选取 $m$ 个向量 $a_{1},\dots,a_{m}\in\Z_{p}^{n}$；独立按 $\chi$ 采样误差 $e_{1},\dots,e_{m}$；公钥为 $\{(a_{i},b_{i})\}_{i=1}^{m}$，其中 $b_{i}=\langle a_{i},s\rangle+e_{i}$。
+  \item \textbf{加密}：加密 $1$ 比特消息，均匀随机选取子集 $S\subseteq[m]$：
+  \begin{itemize}
+    \item 消息为 $0$：密文为
+    \[
+      \left(\sum_{i\in S}a_{i},\ \sum_{i\in S}b_{i}\right);
+    \]
+    \item 消息为 $1$：密文为
+    \[
+      \left(\sum_{i\in S}a_{i},\ \left\lfloor\frac{p}{2}\right\rfloor+\sum_{i\in S}b_{i}\right).
+    \]
+  \end{itemize}
+  \item \textbf{解密}：输入密文 $(a,b)$，计算 $b-\langle a,s\rangle$；若结果模 $p$ 更接近 $0$ 则输出 $0$，更接近 $\lfloor p/2\rfloor$ 则输出 $1$。
+\end{itemize}
+
+公钥规模为 $O(mn\log p)=\widetilde{O}(n^{2})$；密文膨胀因子为 $O(n\log p)=\widetilde{O}(n)$。若所有参与方共享固定随机向量 $a_{i}$，公钥可以仅包含 $b_{i}$，规模降至 $\widetilde{O}(n)$。
+
+\subsection{正确性分析}
+
+\begin{lemma}[正确性]
+设 $\delta>0$。若对任意 $k\in\{0,1,\dots,m\}$，$\chi^{*k}$ 满足
+\[
+  \Pr_{e\sim\chi^{*k}}\!\left[\,|e|<\frac{1}{2}\left\lfloor\frac{p}{2}\right\rfloor\right]>1-\delta,
+\]
+则解密错误概率不超过 $\delta$。
+\end{lemma}
+
+\begin{claim}
+对本文选定的参数，对任意 $k\in\{0,1,\dots,m\}$，有
+\[
+  \Pr_{e\sim\Psibar_{\alpha}^{*k}}
+  \left[\,|e|<\frac{1}{2}\left\lfloor\frac{p}{2}\right\rfloor\right]>1-\delta(n),
+\]
+其中 $\delta(n)$ 为可忽略函数。
+\end{claim}
+
+\subsection{安全性证明}
+
+\setcounter{theorem}{3} % 原文中该结果编号为引理 5.4（引理 5.3 未在本稿展开）
+\begin{lemma}[安全性]
+对任意 $\varepsilon>0$，若 $m\ge(1+\varepsilon)(n+1)\log p$，且存在多项式时间区分器可以区分加密 $0$ 与加密 $1$ 的密文，则存在区分器可以对非可忽略比例的 $s$ 区分 $A_{s,\chi}$ 与均匀分布。
+\end{lemma}
+
+证明思路：混合论证（Hybrid argument）加剩余哈希引理（Leftover Hash Lemma），逐步把公钥与密文替换为均匀随机，最终得到不可区分性。
+
+结合主定理，攻破该密码系统意味着存在高效量子算法，可以以 $\widetilde{O}(n/\alpha)$ 因子近似求解 SIVP 与 GapSVP。
+
+\section*{致谢}
+\addcontentsline{toc}{section}{致谢}
+
+感谢 Michael Langberg、Vadim Lyubashevsky、Daniele Micciancio、Chris Peikert、Miklos Santha、Madhu Sudan 以及匿名审稿人的有益评论。
+
+\begin{thebibliography}{99}
+\addcontentsline{toc}{section}{参考文献}
+
+\bibitem{aharonov2005} D. Aharonov and O. Regev. Lattice problems in NP $\cap$ coNP. \textit{Journal of the ACM}, 52(5):749--765, 2005.
+\bibitem{ajtai1996} M. Ajtai. Generating hard instances of lattice problems. 1996.
+\bibitem{ajtai2005} M. Ajtai. Representing hard lattices with $O(n\log n)$ bits. STOC 2005.
+\bibitem{ajtaidwork1997} M. Ajtai and C. Dwork. A public-key cryptosystem with worst-case/average-case equivalence. STOC 1997.
+\bibitem{ajtaikumar2001} M. Ajtai, R. Kumar, and D. Sivakumar. A sieve algorithm for the shortest lattice vector problem. SODA 2001.
+\bibitem{akavia2009} A. Akavia, S. Goldwasser, and V. Vaikuntanathan. Simultaneous hardcore bits and cryptography against memory attacks. TCC 2009.
+\bibitem{alekhnovich2003} M. Alekhnovich. More on average case vs approximation complexity. FOCS 2003.
+\bibitem{babai1986} L. Babai. On Lovász lattice reduction and the nearest lattice point problem. \textit{Combinatorica}, 6(1):1--13, 1986.
+\bibitem{banaszczyk1993} W. Banaszczyk. New bounds in some transference theorems in the geometry of numbers. \textit{Mathematische Annalen}, 296(4):625--635, 1993.
+\bibitem{blum1993} A. Blum, M. Furst, M. Kearns, and R. J. Lipton. Cryptographic primitives based on hard learning problems. CRYPTO 1993.
+\bibitem{blum2003} A. Blum, A. Kalai, and H. Wasserman. Noise-tolerant learning, the parity problem, and the statistical query model. \textit{Journal of the ACM}, 50(4):506--519, 2003.
+\bibitem{cainerurkar1997} J.-Y. Cai and A. Nerurkar. An improved worst-case to average-case connection for lattice problems. FOCS 1997.
+\bibitem{cash2009} D. Cash, C. Peikert, and A. Sahai. Efficient circular-secure encryption from hard learning problems. 2009.
+\bibitem{ebeling2002} W. Ebeling. \textit{Lattices and Codes}. 2002.
+\bibitem{feige2002} U. Feige. Relations between average case complexity and approximation complexity. STOC 2002.
+\bibitem{gentry2008} C. Gentry, C. Peikert, and V. Vaikuntanathan. Trapdoors for hard lattices and new cryptographic constructions. STOC 2008.
+\bibitem{goldreich1999} O. Goldreich, D. Micciancio, S. Safra, and J.-P. Seifert. Approximating shortest lattice vectors is not harder than approximating closest lattice vectors. \textit{Information Processing Letters}, 71(2):55--61, 1999.
+\bibitem{grover2002} L. Grover and T. Rudolph. Creating superpositions that correspond to efficiently integrable probability distributions. 2002.
+\bibitem{impagliazzo1989} R. Impagliazzo and D. Zuckerman. How to recycle random bits. FOCS 1989.
+\bibitem{katzlindell2008} J. Katz and Y. Lindell. \textit{Introduction to Modern Cryptography}. 2008.
+\bibitem{kawachi2007} A. Kawachi, K. Tanaka, and K. Xagawa. Multi-bit cryptosystems based on lattice problems. PKC 2007.
+\bibitem{klivans2009} A. R. Klivans and A. A. Sherstov. Cryptographic hardness for learning intersections of halfspaces. \textit{Journal of Computer and System Sciences}, 75(1):2--12, 2009.
+\bibitem{kumar2001} R. Kumar and D. Sivakumar. On polynomial approximation to the shortest lattice vector length. SODA 2001.
+\bibitem{lenstra1982} A. K. Lenstra, H. W. Lenstra, Jr., and L. Lovász. Factoring polynomials with rational coefficients. \textit{Mathematische Annalen}, 261(4):515--534, 1982.
+\bibitem{liu2006} Y.-K. Liu, V. Lyubashevsky, and D. Micciancio. On bounded distance decoding for general lattices. RANDOM 2006.
+\bibitem{lyubashevsky2009} V. Lyubashevsky and D. Micciancio. On bounded distance decoding, unique shortest vectors, and the minimum distance problem. 2009.
+\bibitem{micciancio2004} D. Micciancio. Almost perfect lattices, the covering radius problem, and applications to Ajtai's connection factor. \textit{SIAM Journal on Computing}, 34(1):118--168, 2004.
+\bibitem{miccianciogw2002} D. Micciancio and S. Goldwasser. \textit{Complexity of Lattice Problems: A Cryptographic Perspective}. 2002.
+\bibitem{micciancioregev2007} D. Micciancio and O. Regev. Worst-case to average-case reductions based on Gaussian measures. \textit{SIAM Journal on Computing}, 37(1):267--302, 2007.
+\bibitem{moore2007} C. Moore, A. Russell, and U. Vazirani. A classical one-way function to confound quantum adversaries. 2007.
+\bibitem{nielsenchuang2000} M. A. Nielsen and I. L. Chuang. \textit{Quantum Computation and Quantum Information}. Cambridge University Press, 2000.
+\bibitem{peikert2008a} C. Peikert. Limits on the hardness of lattice problems in $\ell_{p}$ norms. \textit{Computational Complexity}, 17(2):300--351, 2008.
+\bibitem{peikert2009} C. Peikert. Public-key cryptosystems from the worst-case shortest vector problem. STOC 2009.
+\bibitem{peikert2008b} C. Peikert, V. Vaikuntanathan, and B. Waters. A framework for efficient and composable oblivious transfer. CRYPTO 2008.
+\bibitem{peikertwaters2008} C. Peikert and B. Waters. Lossy trapdoor functions and their applications. STOC 2008.
+\bibitem{regev2004} O. Regev. New lattice based cryptographic constructions. \textit{Journal of the ACM}, 51(6):899--942, 2004.
+\bibitem{regev2005} O. Regev. On lattices, learning with errors, random linear codes, and cryptography. STOC 2005.
+\bibitem{schnorr1987} C.-P. Schnorr. A hierarchy of polynomial time lattice basis reduction algorithms. \textit{Theoretical Computer Science}, 53(2--3):201--224, 1987.
+
+\end{thebibliography}
+
+\end{document}
