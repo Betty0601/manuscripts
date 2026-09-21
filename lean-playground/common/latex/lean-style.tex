@@ -1,0 +1,63 @@
+% lean-style.tex — shared Lean 4 code style for the listings package.
+% Safe under pdfLaTeX: keep Lean source samples ASCII-only.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesFile{lean-style.tex}[2026/09/21 Lean 4 listings style]
+\RequirePackage{listings}
+\RequirePackage{xcolor}
+
+\definecolor{leanKeyword}{RGB}{0,72,190}
+\definecolor{leanKeyword2}{RGB}{150,40,0}
+\definecolor{leanComment}{RGB}{96,139,0}
+\definecolor{leanString}{RGB}{177,70,0}
+\definecolor{leanBg}{RGB}{248,248,246}
+\definecolor{leanFrame}{RGB}{210,210,200}
+
+\lstdefinelanguage{Lean4}{
+  sensitive=true,
+  keywords=[1]{abbrev,admit,and,as,attr,begin,break,by,catch,class,continue,def,
+    deriving,do,else,end,enum,example,exit,export,extends,forall,fun,if,import,
+    in,inductive,infix,instance,intro,let,local,macro,match,mutual,namespace,
+    noncomputable,notation,opaque,open,partial,private,proof,protected,quit,
+    repeat,return,scoped,section,set_option,show,sorry,structure,syntax,tactic,
+    then,theorem,lemma,universe,universes,using,variable,variables,where,with},
+  keywords=[2]{Add,And,Array,Bool,Decidable,Eq,Field,Fin,Finset,Fintype,FloatingPoint,
+    Float,Fun,IO,Int,List,Monoid,Mul,OfNat,Or,PMF,Polynomial,Prop,Rat,Ring,
+    Semiring,Type,ZMod,Zero,Mathlib,Lean,Elab,Tactic,Math,TacticM,True,False,Nat,
+    Bool,String,Not,NE,GT,LE,LT},
+  keywords=[3]{simp,rw,rfl,intro,exact,apply,induction,cases,have,show,ring,
+    omega,nlinarith,norm_num,decide,constructor,fun,sorry,exact?,rw?,apply?,
+    aesop,linarith,field_simp,ring_nf,set_option,open,scoped,do,revert,rename,
+    subst,contrapose,by_contra,rintro,infer_instance,injection,contradiction,
+    trivial,use,left,right,assumption},
+  comment=[l]{--},
+  morecomment=[s]{/-}{-/},
+  morestring=[b]{"},
+}
+\lstset{
+  language=Lean4,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=[1]\color{leanKeyword}\bfseries,
+  keywordstyle=[2]\color{leanKeyword2},
+  keywordstyle=[3]\color{leanKeyword}\bfseries,
+  commentstyle=\color{leanComment}\itshape,
+  stringstyle=\color{leanString},
+  backgroundcolor=\color{leanBg},
+  frame=single,
+  rulecolor=\color{leanFrame},
+  framesep=4pt,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=8pt,
+  breaklines=true,
+  breakatwhitespace=false,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  tabsize=2,
+  aboveskip=10pt,
+  belowskip=6pt,
+}
+% Usage: \leanfile{caption}{path/to/File.lean}
+\newcommand{\leanfile}[2]{%
+  \lstinputlisting[language=Lean4,caption={#1},captionpos=b]{#2}}
+\endinput

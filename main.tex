@@ -6,6 +6,11 @@
 \usepackage{tikz}
 \usetikzlibrary{positioning,arrows,calc}
 
+% Lean Playground: shared code styles and math macros (pdfLaTeX-safe)
+\input{lean-playground/common/latex/lean-style}
+\input{lean-playground/common/latex/wolfram-style}
+\input{lean-playground/common/latex/math-macros}
+
 \title{PQC Level ① Pre-Training with QIS Exercises}
 \author{}
 \date{}
@@ -18,6 +23,8 @@ Training repo: Practice proofs from Nielsen & Chuang Quantum Computation and Qua
 \end{abstract}
 
 \input{sections/00-preliminaries}
+
+\input{lean-playground/paper/appendix}
 
 \bibliographystyle{alpha}
 \bibliography{references,cryptobib/abbrev,cryptobib/crypto}

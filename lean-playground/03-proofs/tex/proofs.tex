@@ -1,0 +1,54 @@
+\section{证明与推导（Proofs）}\label{sec:proofs}
+
+本节每个结果都给出\emph{纸面推导}与\emph{Lean 形式证明}两种写法。
+
+\subsection{重写与判定过程}
+展开 $(x+1)^2 = x^2 + 2x + 1$（$x\in\lgZ$）：在纸上是分配律与合并同类项；
+在 Lean 中 \texttt{ring} 一条 tactic 即可完成，因为该命题属于可判定的交换环等式：
+
+\begin{lstlisting}
+example : forall x : Int, (x + 1)^2 = x^2 + 2*x + 1 := by
+  intro x
+  ring
+\end{lstlisting}
+
+\texttt{omega} 处理 Presburger 算术，\texttt{norm_num} 处理闭数值：
+
+\begin{lstlisting}
+example (n : Nat) : n < n + 1 := by omega
+example : (2 : Nat) + 2 = 4 := by norm_num
+\end{lstlisting}
+
+\subsection{归纳法}
+证明 $n\cdot 0 = 0$。
+
+\noindent\emph{纸面推导：} 对 $n$ 归纳。基例 $0\cdot0=0$ 由定义成立；
+步进情形 $(n+1)\cdot0 = n\cdot0 + 0$（\texttt{Nat.succ\_mul}），
+由归纳假设 $n\cdot0=0$ 得 $0+0=0$。
+
+\begin{lstlisting}
+theorem mul_zero_demo (n : Nat) : n * 0 = 0 := by
+  induction n with
+  | zero => rfl
+  | succ n ih =>
+      -- rw 重写后自动尝试 rfl，改完即闭合
+      rw [Nat.succ_mul, ih]
+\end{lstlisting}
+
+列表上的同构命题 $|xs \mathbin{++} ys| = |xs|+|ys|$ 见
+\texttt{Proofs/Induction.lean}。
+
+\subsection{命题逻辑与反证法}
+$\neg\neg P \leftrightarrow P$ 在经典逻辑下成立（Mathlib 默认经典）：
+
+\begin{lstlisting}
+example (P : Prop) : ~ ~ P <-> P := by
+  constructor
+  · intro h; by_contra hn; exact h hn
+  · intro h; intro hn; exact hn h
+\end{lstlisting}
+
+\subsection{搜索：不会证就先搜}
+\texttt{exact?}、\texttt{rw?}、\texttt{apply?} 在 Mathlib 里检索现成引理；
+\texttt{decide} 对有限/可判定闭项直接求值。形式化工作中应优先使用搜索，
+再考虑手写长证明。

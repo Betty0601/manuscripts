@@ -1,0 +1,50 @@
+% wolfram-style.tex — shared Wolfram Language (Mathematica) code style.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesFile{wolfram-style.tex}[2026/09/21 Wolfram Language listings style]
+\RequirePackage{listings}
+\RequirePackage{xcolor}
+
+\definecolor{wlKeyword}{RGB}{120,0,130}
+\definecolor{wlBuiltin}{RGB}{0,90,160}
+\definecolor{wlComment}{RGB}{96,139,0}
+\definecolor{wlString}{RGB}{177,70,0}
+
+\lstdefinelanguage{Wolfram}{
+  sensitive=true,
+  keywords=[1]{Module,Block,With,Do,For,While,If,Which,Switch,Return,Break,
+    Continue,Function,Pure,Map,Apply,Table,Array,Print,Export,Import,
+    SetDelayed,RuleDelayed,ReplaceAll,Solve,DSolve,FullSimplify,Simplify,
+    Eigenvalues,Eigenvectors,Eigensystem,KroneckerProduct,MatrixExp,ConjugateTranspose},
+  keywords=[2]{Sqrt,Sin,Cos,Exp,Log,Pi,I,Infinity,IdentityMatrix,DiagonalMatrix,
+    Transpose,Det,Inverse,Tr,TensorProduct,Normalize,ComplexExpand,TeXForm,
+    ToString,TeXSave,CreateDirectory,DirectoryName,InputFileName,Quiet,N},
+  morecomment=[l]{(*},
+  morecomment=[s]{(*}{*)},
+  morestring=[b]",
+}
+\lstdefinestyle{wlstyle}{
+  language=Wolfram,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=[1]\color{wlKeyword}\bfseries,
+  keywordstyle=[2]\color{wlBuiltin},
+  commentstyle=\color{wlComment}\itshape,
+  stringstyle=\color{wlString},
+  backgroundcolor=\color{leanBg},
+  frame=single,
+  rulecolor=\color{leanFrame},
+  framesep=4pt,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=8pt,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  tabsize=2,
+  aboveskip=10pt,
+  belowskip=6pt,
+}
+% Usage: \wlfile{caption}{path/to/script.wls}
+\newcommand{\wlfile}[2]{%
+  \lstinputlisting[style=wlstyle,caption={#1},captionpos=b]{#2}}
+\endinput

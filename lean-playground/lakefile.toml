@@ -1,0 +1,45 @@
+name = "leanplayground"
+defaultTargets = ["LeanPlayground", "FormalMath", "NumericCircuit", "Foundations", "Proofs", "Features", "PQC"]
+
+[leanOptions]
+relaxedAutoImplicit = false
+
+# Mathlib pinned to the release tag matching lean-toolchain v4.34.0.
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.34.0"
+
+# ---- shared layer: common/lean/LeanPlayground/... ----
+[[lean_lib]]
+name = "LeanPlayground"
+srcDir = "common/lean"
+
+# ---- 01-qis-training (placeholders for later content) ----
+[[lean_lib]]
+name = "FormalMath"
+srcDir = "01-qis-training/formal-math/lean"
+
+[[lean_lib]]
+name = "NumericCircuit"
+srcDir = "01-qis-training/numeric-circuit/lean"
+
+# ---- 02-foundations ----
+[[lean_lib]]
+name = "Foundations"
+srcDir = "02-foundations/lean"
+
+# ---- 03-proofs ----
+[[lean_lib]]
+name = "Proofs"
+srcDir = "03-proofs/lean"
+
+# ---- 04-features ----
+[[lean_lib]]
+name = "Features"
+srcDir = "04-features/lean"
+
+# ---- 05-pqc-crypto ----
+[[lean_lib]]
+name = "PQC"
+srcDir = "05-pqc-crypto/lean"

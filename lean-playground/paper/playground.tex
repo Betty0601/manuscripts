@@ -1,0 +1,24 @@
+% Lean Playground — standalone compilation (Overleaf / local).
+% Compile with pdfLaTeX. On Overleaf set this file as the Main Document
+% (Menu -> Main document); locally: latexmk -pdf paper/playground.tex
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
+
+\input{../common/latex/lean-style}
+\input{../common/latex/wolfram-style}
+\input{../common/latex/math-macros}
+
+\newcommand{\lgroot}{..}
+
+\title{Lean Playground:\\Notes, Proofs and Verified Experiments}
+\author{Betty0601}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\input{body}
+\end{document}

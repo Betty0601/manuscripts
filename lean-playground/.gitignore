@@ -1,0 +1,18 @@
+# Lake build artifacts and dependency checkouts
+/.lake
+.lake/
+/build/
+
+# Wolfram generated fragments
+/common/mathematica/build/
+
+# Lean / editor noise
+*.olean
+*.ilean
+*.trace
+*.trace.db
+.DS_Store
+*.swp
+
+# elan / lake downloads
+/lean-toolchain.tmp

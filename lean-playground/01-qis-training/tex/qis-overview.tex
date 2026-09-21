@@ -1,0 +1,16 @@
+\section{QIS 书本分阶段训练路径合集}\label{sec:qis-training}
+
+本项目（\texttt{01-qis-training}）对应 Nielsen \& Chuang
+\emph{Quantum Computation and Quantum Information} 的分阶段训练，
+并面向 ML-KEM/ML-DSA 的 QROM 安全归约能力建设。两条支线如下：
+
+\begin{description}
+  \item[形式化数学验证（formal-math）] 复向量空间、谱定理、张量积与偏迹、
+        概率期望、game-based 归约所需数学引理的 Lean/Mathlib 形式化。
+  \item[数值与电路验证（numeric-circuit）] 固定精度数值核对、量子电路的
+        结构化描述，以及 Wolfram 数值结果与 Lean 精确命题的交叉校验。
+\end{description}
+
+\noindent\textbf{状态：占位。} 具体分阶段内容由用户稍后提供；
+两条支线的 Lean 模块（\texttt{FormalMath}、\texttt{NumericCircuit}）
+与目录骨架已接入构建系统。

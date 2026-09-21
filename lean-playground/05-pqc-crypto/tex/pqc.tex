@@ -1,0 +1,54 @@
+\section{PQC / 密码学练习}\label{sec:pqc}
+
+\subsection{有限域 \texorpdfstring{$\lgF{p}$}{F\_p}}
+$p$ 为素数时 $\lgZ/p\lgZ$ 是有限域，Lean 中对应 \texttt{ZMod p}；
+对具体字面值素数需登记 \texttt{Fact (Nat.Prime 7)}（标准写法）：
+
+\begin{lstlisting}
+instance : Fact (Nat.Prime 7) := Fact.mk (by decide)
+#check (inferInstance : Field (ZMod 7))
+example : (5 : ZMod 7) * 6 = 2 := by decide
+\end{lstlisting}
+
+\noindent\textbf{Fermat 小定理。} 对任意 $a\in\lgF{p}$ 有 $a^p = a$。
+取 $p=7$ 的形式化版本（\texttt{simp} 自动调用 Mathlib 的
+\texttt{ZMod.pow\_card}，即 $a^{|\lgF{7}|}=a$，并把基数化为 $7$）：
+
+\begin{lstlisting}
+example : forall a : ZMod 7, a ^ 7 = a := by
+  intro a
+  simp
+\end{lstlisting}
+
+\subsection{多项式环：ML-KEM 的工作环}
+ML-KEM 的运算发生在 $\lgF{3329}[X]/(X^n+1)$。
+先在完整多项式环 $\lgF{3329}[X]$ 中建立代数事实：
+
+\begin{lstlisting}
+open Polynomial
+#check (X : Polynomial (ZMod 3329))
+
+example (p : Polynomial (ZMod 3329)) : p * 0 = 0 := mul_zero p
+example (p q r : Polynomial (ZMod 3329)) :
+    (p + q) * r = p * r + q * r := add_mul p q r
+\end{lstlisting}
+
+\subsection{计数与增长界}
+安全归约中常见“坏事件空间不超过 $2^n$”一类论证，其基础构件是
+$\forall n,\ 0 < 2^n$ 与 $\forall n,\ 2^n > n$：
+
+\begin{lstlisting}
+theorem two_pow_gt : forall n : Nat, 2 ^ n > n
+  | 0 => by decide
+  | n + 1 => by
+      have ih := two_pow_gt n
+      simp [pow_succ]
+      nlinarith
+\end{lstlisting}
+
+\subsection{数值交叉校验}
+同一条代数结论可由 Wolfram 做符号/数值核验，导出的 \LaTeX{} 片段经
+\texttt{common/mathematica/export-tex.wls} 生成后以
+\texttt{\textbackslash input} 引入，实现
+\emph{Wolfram 实验} $\leftrightarrow$ \emph{Lean 精确陈述}
+$\leftrightarrow$ \emph{LaTeX 写作} 三方一致。
